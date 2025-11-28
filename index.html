@@ -1,0 +1,1461 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نادي اقرأ - متجر الكتب</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --------------------------------------------------
+           1. إعدادات عامة
+           -------------------------------------------------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Cairo', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #fcf8ec; 
+            color: #5d4037;
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding-bottom: 0; 
+        }
+
+        /* --------------------------------------------------
+           2. شاشة الانترو
+           -------------------------------------------------- */
+        #intro-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d1b00 100%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 1s ease-in-out;
+            padding: 20px;
+            overflow: hidden; 
+        }
+
+        .intro-content {
+            text-align: center;
+            position: relative;
+            width: 100%;
+            max-width: 320px;
+            z-index: 10; 
+        }
+
+        /* حاوية الإيموجي */
+        .book-emojis {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1; 
+        }
+
+        /* --- حركة الإيموجي --- */
+        .book-emoji {
+            position: absolute;
+            font-size: 28px;
+            top: 50%;
+            left: 50%;
+            opacity: 0;
+            animation: luxuriousFloat 3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        @keyframes luxuriousFloat {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.3) rotate(0deg); }
+            20% { opacity: 1; transform: translate(-50%, -50%) scale(0.8) rotate(10deg); }
+            100% { opacity: 0; transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1.1) rotate(var(--rot)); }
+        }
+
+        .logo-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #f2cd7c, #a17506);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 20px;
+            box-shadow: 0 0 40px rgba(242, 205, 124, 0.2);
+            animation: pulse 3s infinite ease-in-out;
+            position: relative;
+            z-index: 10; 
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
+        }
+
+        .logo-circle img {
+            width: 80%;
+            height: 80%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .intro-title {
+            color: #f2cd7c;
+            font-size: 1.8rem;
+            font-weight: 900;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .loading-container {
+            width: 100%;
+            max-width: 280px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 3px;
+            margin: 15px auto;
+        }
+
+        .loading-bar {
+            height: 6px;
+            background: linear-gradient(90deg, #a17506, #f2cd7c);
+            border-radius: 8px;
+            width: 0%;
+            transition: width 0.1s linear; 
+        }
+
+        .loading-text {
+            color: #f2cd7c;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+
+        .fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* --------------------------------------------------
+           3. المتجر الرئيسي
+           -------------------------------------------------- */
+        #main-store {
+            opacity: 0;
+            transition: opacity 1s ease;
+            padding-bottom: 60px;
+        }
+
+        .show-main {
+            opacity: 1 !important;
+        }
+
+        .navbar {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: #f7f1e1;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-text {
+            font-weight: 900;
+            font-size: 1.3rem;
+            color: #a17506;
+            margin-bottom: 10px;
+        }
+
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #8d6e63;
+            font-weight: 700;
+            font-size: 0.9rem;
+            padding: 5px 10px;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: #a17506;
+        }
+
+        .search-box {
+            width: 100%;
+            max-width: 300px;
+            position: relative;
+        }
+
+        .search-box input {
+            padding: 10px 15px;
+            border-radius: 20px;
+            border: 1px solid #d7ccc8;
+            background: #fff;
+            outline: none;
+            width: 100%;
+            font-family: 'Cairo';
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        .search-box input:focus {
+            border-color: #a17506;
+            box-shadow: 0 0 5px rgba(161, 117, 6, 0.2);
+        }
+
+        .hero-section {
+            position: relative; 
+            text-align: center;
+            padding: 40px 15px; 
+            background-color: #2d1b00; 
+            overflow: hidden; 
+            min-height: 250px; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* الفيديو الخلفي */
+        #hero-video-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 0; 
+            opacity: 0.4; 
+            filter: brightness(0.6); 
+        }
+
+        /* طبقة المحتوى فوق الفيديو */
+        .hero-content {
+            position: relative;
+            z-index: 2; 
+            width: 100%;
+        }
+
+        .main-logo-frame {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto;
+            border-radius: 50%;
+            border: 6px solid #cfaa56;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .main-logo-frame img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .hero-title {
+            margin-top: 15px;
+            font-size: 2.2rem;
+            color: #fcf8ec; 
+            font-weight: 900;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+        }
+
+        .hero-subtitle {
+            font-size: 0.9rem;
+            color: #fff;
+            letter-spacing: 1px;
+            margin-top: 8px;
+            text-transform: uppercase;
+            border-top: 2px solid #cfaa56;
+            border-bottom: 2px solid #cfaa56;
+            display: inline-block;
+            padding: 4px 15px;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(2px);
+        }
+
+        .categories-wrapper {
+            margin: 20px auto;
+            padding: 0 15px;
+            display: flex;
+            justify-content: flex-start;
+            flex-wrap: nowrap;
+            gap: 8px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .cat-btn {
+            background: transparent;
+            border: 2px solid #cfaa56;
+            color: #5d4037;
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .cat-btn.active {
+            background: #a17506;
+            color: #fff;
+            border-color: #a17506;
+        }
+
+        /* --------------------------------------------------
+           4. نظام الرفوف
+           -------------------------------------------------- */
+        .shelves-container {
+            margin: 0 auto;
+            padding-bottom: 20px;
+            min-height: 300px; 
+        }
+
+        .shelf-wrapper {
+            margin-bottom: 40px;
+            transition: all 0.5s ease;
+            pointer-events: none !important;
+        }
+        
+        .shelf-wrapper.hidden-shelf {
+            display: none;
+        }
+
+        .shelf-title {
+            text-align: right;
+            padding-right: 25px;
+            margin-bottom: -10px;
+            position: relative;
+            z-index: 5;
+            color: #a17506;
+            font-weight: 800;
+            font-size: 1.1rem;
+            text-shadow: 1px 1px 0 #fff;
+            pointer-events: none;
+        }
+
+        .shelf-row {
+            position: relative;
+            width: 100%;
+            height: 220px; 
+            display: flex;
+            align-items: flex-end;
+            pointer-events: none;
+        }
+
+        .books-track {
+            display: flex;
+            overflow-x: auto; 
+            scroll-behavior: smooth;
+            width: 100%;
+            height: 100%;
+            align-items: flex-end;
+            position: relative;
+            z-index: 5; 
+            padding-bottom: 35px; 
+            padding-right: 20px;
+            padding-left: 20px;
+            gap: 50px; 
+            scrollbar-width: none; 
+            -ms-overflow-style: none; 
+            pointer-events: auto !important; 
+        }
+
+        .books-track::-webkit-scrollbar {
+            display: none; 
+        }
+
+        /* Book Item */
+        .book-item {
+            flex-shrink: 0;
+            position: relative;
+            cursor: pointer;
+            transform: none; 
+            perspective: 800px; 
+            margin-bottom: 0px; 
+            padding-bottom: 5px; 
+            user-select: none;
+            pointer-events: auto !important;
+            z-index: 100;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        
+        .book-item.hidden-book {
+            display: none;
+        }
+
+        .book-item::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 9999; 
+            background: transparent;
+        }
+
+        .book-frame {
+            position: relative;
+            width: 100px;
+            height: 150px;
+            background-color: transparent;
+            border: none;
+            box-shadow: none;
+            transform-style: preserve-3d;
+            transform-origin: bottom center; 
+            transform: rotateX(10deg); 
+            transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            pointer-events: none; 
+        }
+
+        .book-item:active .book-frame {
+            transform: rotateX(10deg) scale(0.95);
+        }
+
+        .book-cover {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 4px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3); 
+        }
+
+        .book-price {
+            position: absolute;
+            top: 5px;
+            left: 3px;
+            background-color: #f7f1e1; 
+            color: #a17506; 
+            border: 1px solid #cfaa56;
+            padding: 2px 8px;
+            border-radius: 12px; 
+            font-size: 0.7rem;
+            font-weight: 900;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.25);
+            z-index: 20; 
+            transform: translateZ(15px); 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .book-ribbon {
+            position: absolute;
+            bottom: 20px; 
+            left: -10px; 
+            width: calc(100% + 20px); 
+            background: linear-gradient(to right, #a17506, #f2cd7c, #e4b658, #a17506);
+            color: #5d4037;
+            text-align: center;
+            font-size: 0.6rem;
+            font-weight: 800;
+            padding: 4px 2px;
+            text-shadow: 0px 1px 0px rgba(255,255,255,0.5);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            z-index: 10;
+            clip-path: polygon(0 0, 100% 0, 97% 100%, 3% 100%);
+            transform: translateZ(2px);
+        }
+
+        .book-ribbon::before, .book-ribbon::after {
+             content: '';
+             position: absolute;
+             top: 100%; 
+             border-style: solid;
+             filter: brightness(0.6); 
+        }
+
+        .book-ribbon::before {
+             left: 0;
+             border-width: 0 10px 10px 0;
+             border-color: transparent #a17506 transparent transparent;
+        }
+        
+        .book-ribbon::after {
+             right: 0;
+             border-width: 0 0 10px 10px;
+             border-color: transparent transparent transparent #a17506;
+        }
+
+        /* Wood Shelf */
+        .wood-shelf {
+            position: absolute;
+            bottom: 23px; 
+            left: 0; 
+            width: 100%; 
+            height: 24px;
+            background: 
+                url('https://www.transparenttextures.com/patterns/wood-pattern.png'),
+                linear-gradient(180deg, #a67c52 0%, #8a5e3a 50%, #734b36 100%);
+            border-radius: 0; 
+            border-top: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: inset 0 2px 3px rgba(255,255,255,0.2);
+            z-index: 10; 
+            pointer-events: none !important; 
+        }
+        
+        .wood-shelf::after {
+            content: '';
+            position: absolute;
+            top: 24px;
+            left: 0;
+            right: 0;
+            height: 18px;
+            background: 
+                url('https://www.transparenttextures.com/patterns/wood-pattern.png'),
+                linear-gradient(to bottom, #5a3d31 0%, #3e2723 100%);
+            border-radius: 0;
+            box-shadow: 
+                inset 0 6px 10px rgba(0,0,0,0.7),
+                0 25px 40px rgba(0,0,0,0.5);
+            z-index: 10;
+            pointer-events: none !important;
+        }
+
+        /* --------------------------------------------------
+           5. النوافذ والسلة
+           -------------------------------------------------- */
+        .cart-icon-float {
+            position: fixed;
+            bottom: 80px; 
+            left: 20px;
+            width: 60px;
+            height: 60px;
+            background: #a17506;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            cursor: pointer;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+            pointer-events: auto;
+        }
+        
+        .cart-icon-float:hover {
+            transform: scale(1.1);
+        }
+
+        .cart-icon-float span {
+            font-size: 28px;
+            color: #fff;
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #d32f2f;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+            font-weight: bold;
+            border: 2px solid #fff;
+        }
+
+        /* Floating Action Button for Sharing */
+        .share-fab-btn { 
+            position: fixed; bottom: 160px; left: 20px; width: 50px; height: 50px; 
+            background: #2196F3; border-radius: 50%; display: none; /* Hidden by default */
+            justify-content: center; align-items: center; 
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.3); cursor: pointer; z-index: 999;
+            color: white; font-size: 24px; border: 2px solid white;
+            animation: bounceIn 0.5s;
+        }
+        @keyframes bounceIn { 0% { transform: scale(0); } 80% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+            pointer-events: auto;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Custom Modal Structure */
+        .custom-modal {
+            position: relative;
+            width: 90%;
+            max-width: 500px;
+            overflow: visible; 
+            transform: translateY(50px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: transparent;
+            box-shadow: none;
+            border: none;
+        }
+
+        .modal-overlay.active .custom-modal {
+            transform: translateY(0);
+        }
+
+        .modal-content-wrapper {
+            background: #fcf8ec;
+            border-radius: 20px;
+            overflow: hidden; 
+            border: 4px solid #cfaa56;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            max-height: 85vh;
+            overflow-y: auto;
+            -ms-overflow-style: none;  
+            scrollbar-width: none;  
+        }
+        
+        .modal-content-wrapper::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Popped-out Close Button */
+        .modal-close-btn {
+            position: absolute;
+            top: -12px; 
+            left: -12px;
+            width: 32px; 
+            height: 32px;
+            z-index: 100;
+            background: linear-gradient(135deg, #cfaa56, #a17506); 
+            color: #fcf8ec; 
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-weight: 400; 
+            font-size: 1.4rem;
+            line-height: 1;
+            border: 2px solid #fcf8ec; 
+            box-shadow:
+                0 4px 8px rgba(161, 117, 6, 0.3), 
+                inset 0 1px 1px rgba(255, 255, 255, 0.4); 
+            transition: all 0.3s ease;
+        }
+        
+        .modal-close-btn:hover {
+            transform: scale(1.1) rotate(90deg); 
+            background: linear-gradient(135deg, #d4b36a, #b38308); 
+            box-shadow: 0 6px 12px rgba(161, 117, 6, 0.4);
+        }
+
+        /* Product Details */
+        .modal-image-container {
+            width: 100%;
+            height: 280px; 
+            background: #fcf8ec; 
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            flex-shrink: 0;
+        }
+
+        .modal-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; 
+            border-radius: 4px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
+        }
+
+        .modal-details {
+            padding: 20px 25px; 
+            text-align: center;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #a17506;
+            margin-bottom: 10px;
+        }
+
+        .modal-desc {
+            font-size: 0.95rem;
+            color: #5d4037;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            white-space: pre-wrap;
+        }
+
+        .modal-price-tag {
+            display: inline-block;
+            background: #f7f1e1;
+            color: #a17506;
+            border: 2px solid #cfaa56;
+            padding: 5px 20px;
+            border-radius: 50px;
+            font-weight: 900;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+
+        /* Quantity Selector */
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .qty-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            border: 2px solid #cfaa56;
+            background: #fff;
+            color: #a17506;
+            font-weight: bold;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        .qty-btn:active {
+            background: #cfaa56;
+            color: #fff;
+        }
+
+        .qty-display {
+            font-size: 1.3rem;
+            font-weight: 900;
+            color: #5d4037;
+            min-width: 30px;
+            text-align: center;
+        }
+
+        .main-action-btn {
+            background: linear-gradient(45deg, #a17506, #cfaa56);
+            color: #fff;
+            border: none;
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(161, 117, 6, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .main-action-btn:active {
+            transform: scale(0.98);
+            box-shadow: 0 2px 5px rgba(161, 117, 6, 0.3);
+        }
+
+        .main-action-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Cart Content */
+        .cart-header { background: #f7f1e1; padding: 20px; text-align: center; border-bottom: 2px solid #cfaa56; }
+        .cart-header h2 { color: #a17506; font-weight: 900; }
+        .cart-body { padding: 20px; }
+        .cart-items-list { max-height: 300px; overflow-y: auto; margin-bottom: 20px; padding-right: 5px; scrollbar-width: none; }
+        .cart-items-list::-webkit-scrollbar { width: 5px; }
+        .cart-items-list::-webkit-scrollbar-track { background: #f1f1f1; }
+        .cart-items-list::-webkit-scrollbar-thumb { background: #cfaa56; border-radius: 10px; }
+
+        .cart-item-preview { display: flex; align-items: center; justify-content: space-between; background: #fff; padding: 10px; border-radius: 10px; border: 1px solid #d7ccc8; margin-bottom: 10px; }
+        .cart-item-left { display: flex; align-items: center; }
+        .cart-item-img { width: 50px; height: 70px; object-fit: cover; border-radius: 5px; margin-left: 15px; }
+        .cart-item-info h4 { color: #5d4037; font-size: 0.9rem; margin-bottom: 5px; }
+        .cart-item-price { color: #a17506; font-weight: bold; font-size: 0.9rem; display: block; }
+        .qty-badge { font-size: 0.7rem; background: #eee; padding: 2px 6px; border-radius: 4px; color: #666; }
+        .remove-item-btn { background: #ffebee; color: #d32f2f; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 1rem; transition: background 0.2s; }
+        .remove-item-btn:hover { background: #ffcdd2; }
+        .cart-summary { border-top: 2px dashed #cfaa56; padding-top: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; font-weight: 900; font-size: 1.1rem; color: #a17506; }
+        .empty-cart-msg { text-align: center; color: #8d6e63; font-weight: bold; padding: 20px; }
+
+        .form-group { margin-bottom: 15px; }
+        .form-label { display: block; margin-bottom: 5px; color: #5d4037; font-weight: 700; font-size: 0.9rem; }
+        .form-input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #cfaa56; background: #fff; font-family: 'Cairo'; outline: none; transition: border-color 0.3s; }
+        .form-input:focus { border-color: #a17506; box-shadow: 0 0 5px rgba(161, 117, 6, 0.2); }
+        .error-msg { color: #d32f2f; font-size: 0.8rem; margin-top: 5px; display: none; }
+        
+        /* رسالة "لا توجد نتائج" */
+        .no-results-msg {
+            text-align: center;
+            padding: 30px;
+            font-weight: bold;
+            color: #8d6e63;
+            font-size: 1.2rem;
+            grid-column: 1 / -1; 
+            width: 100%;
+        }
+
+        /* About Us Design */
+        .about-text { font-size: 0.95rem; line-height: 1.8; color: #5d4037; text-align: justify; margin-bottom: 30px; }
+        .founder-box { background: linear-gradient(135deg, #ffffff, #fdf7e2); border: 2px solid #cfaa56; border-radius: 15px; padding: 25px; position: relative; box-shadow: 0 8px 20px rgba(161, 117, 6, 0.15); margin-top: 30px; overflow: visible; }
+        .founder-box::before { content: '❝'; font-size: 5rem; color: rgba(207, 170, 86, 0.15); position: absolute; top: -20px; right: 15px; font-family: serif; line-height: 1; }
+        .founder-box h3 { color: #a17506; font-size: 1.1rem; margin-bottom: 15px; text-align: center; position: relative; display: inline-block; width: 100%; border-bottom: 1px dashed #cfaa56; padding-bottom: 10px; }
+        .founder-message { font-style: italic; color: #4a3b32; font-size: 0.9rem; line-height: 1.7; text-align: justify; margin-bottom: 15px; position: relative; z-index: 2; }
+        .founder-signature { text-align: left; font-weight: 900; color: #a17506; font-size: 1rem; font-family: 'Cairo', sans-serif; position: relative; z-index: 2; }
+
+        .mobile-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #f7f1e1; display: flex; justify-content: space-around; padding: 10px 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 100; pointer-events: auto; }
+        .mobile-nav-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: #8d6e63; font-size: 0.7rem; font-weight: 600; }
+        
+        @media (min-width: 768px) { .mobile-nav { display: none; } .navbar { flex-direction: row; justify-content: space-between; } }
+
+        /* --------------------------------------------------
+           6. الفوتر المصغر (Compact & Glowing)
+           -------------------------------------------------- */
+        .site-footer {
+            background: radial-gradient(circle at center, #3d2600 0%, #2d1b00 100%);
+            color: #fcf8ec;
+            text-align: center;
+            /* تم تصغير الحشوة بشكل كبير لجعل الفوتر رفيعاً */
+            padding: 15px 10px; 
+            margin-top: 40px;
+            border-top: 2px solid #a17506; 
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px; /* مسافة صغيرة جداً بين العناصر */
+            position: relative;
+            z-index: 50;
+            overflow: hidden;
+            min-height: auto;
+        }
+
+        /* خلفية الإضاءة الخفيفة */
+        .site-footer::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(161, 117, 6, 0.08) 0%, transparent 60%);
+            pointer-events: none;
+            animation: rotateBg 20s linear infinite;
+        }
+        @keyframes rotateBg { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+
+        /* في الموبايل نضيف حشوة سفلية فقط لكي لا يغطي الشريط السفلي المحتوى، لكن نحافظ على الشكل الصغير */
+        @media (max-width: 768px) {
+            .site-footer {
+                padding-bottom: 30px; 
+            }
+        }
+
+        .footer-social-icon {
+            display: inline-block;
+            text-decoration: none;
+            position: relative;
+            z-index: 2;
+            line-height: 0; /* لإزالة أي مسافات إضافية */
+        }
+
+        /* أيقونة صغيرة ولكن مضيئة جداً */
+        .footer-social-icon svg {
+            width: 24px; /* حجم صغير جداً ومناسب */
+            height: 24px;
+            fill: #cfaa56; 
+            filter: drop-shadow(0 0 5px rgba(207, 170, 86, 0.9)) 
+                    drop-shadow(0 0 10px rgba(161, 117, 6, 0.6));
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            animation: iconPulse 2s infinite alternate ease-in-out;
+        }
+
+        .footer-social-icon:hover svg {
+            transform: scale(1.2);
+            fill: #fff; 
+            filter: drop-shadow(0 0 8px rgba(207, 170, 86, 1)) 
+                    drop-shadow(0 0 15px rgba(242, 205, 124, 0.9))
+                    brightness(1.2);
+        }
+
+        @keyframes iconPulse {
+            0% { filter: drop-shadow(0 0 4px rgba(207, 170, 86, 0.7)); transform: scale(1); }
+            100% { filter: drop-shadow(0 0 8px rgba(207, 170, 86, 1)); transform: scale(1.1); }
+        }
+
+        /* نص صغير وأنيق */
+        .footer-copyright {
+            font-size: 0.7rem; /* خط صغير جداً */
+            letter-spacing: 0.5px;
+            opacity: 0.9;
+            direction: ltr; 
+            text-transform: uppercase;
+            position: relative;
+            z-index: 2;
+            font-weight: 600;
+            line-height: 1;
+        }
+
+        /* اسم المطور مضيء وصغير */
+        .developer-name {
+            color: #cfaa56;
+            font-weight: 800;
+            position: relative;
+            display: inline-block;
+            padding: 0 3px;
+            text-shadow: 0 0 4px rgba(207, 170, 86, 0.8);
+            animation: textGlowPulse 3s infinite alternate ease-in-out;
+        }
+        
+        @keyframes textGlowPulse {
+             0% { text-shadow: 0 0 3px rgba(207, 170, 86, 0.6); }
+             100% { text-shadow: 0 0 8px rgba(207, 170, 86, 1); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="intro-screen">
+        <div class="book-emojis" id="book-emojis"></div>
+        <div class="intro-content">
+            <div class="logo-circle"><img src="https://archive.org/download/20251125_20251125_0813/%D8%A7%D9%82%D8%B1%D8%A3.jpg" alt="Logo"></div>
+            <h1 class="intro-title">نادي اقرأ</h1>
+            <div class="loading-container"><div class="loading-bar" id="progress-bar"></div></div>
+            <div class="loading-text" id="loading-text">جاري تحميل المكتبة...</div>
+        </div>
+    </div>
+
+    <div id="main-store">
+        <nav class="navbar">
+            <div class="logo-text">نادي اقرأ</div>
+            <div class="nav-links">
+                <a href="#" id="nav-home-link">الرئيسية</a>
+                <a href="#" id="nav-share-link">المشاركة</a>
+                <a href="#" id="nav-borrow-link">استعارة كتاب</a>
+                <a href="#" id="sell-book-link">بيع كتاب</a>
+                <a href="#" id="nav-about-link">من نحن</a>
+            </div>
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="ابحث عن كتاب...">
+            </div>
+        </nav>
+
+        <header class="hero-section">
+            <video autoplay muted loop playsinline id="hero-video-bg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; opacity: 0.4; filter: brightness(0.6);">
+                <source src="https://cdn.pixabay.com/video/2025/11/28/318598.mp4" type="video/mp4">
+            </video>
+            <div class="hero-content" style="position: relative; z-index: 2;">
+                <div class="main-logo-frame"><img src="https://archive.org/download/20251125_20251125_0813/%D8%A7%D9%82%D8%B1%D8%A3.jpg" alt="Club Logo"></div>
+                <h1 class="hero-title">نَادِي اقْرَأ</h1>
+                <div class="hero-subtitle">GOODBOOKS GOOD COMPANY</div>
+            </div>
+        </header>
+
+        <div class="categories-wrapper">
+            <button class="cat-btn active" data-filter="all">عرض الكل</button>
+            
+            <button class="cat-btn" data-filter="novels">الروايات والأدب</button>
+            <button class="cat-btn" data-filter="self-dev">التنمية البشرية</button>
+            <button class="cat-btn" data-filter="history">التاريخ والحضارة</button>
+            <button class="cat-btn" data-filter="kids">ركن الطفل</button>
+            <button class="cat-btn" data-filter="science">العلوم والمعرفة</button>
+            <button class="cat-btn" data-filter="psychology">علم النفس</button>
+            <button class="cat-btn" data-filter="philosophy">فلسفة</button>
+            <button class="cat-btn" data-filter="spirituality">روحانيات</button>
+            <button class="cat-btn" data-filter="short-stories">قصص قصيرة</button>
+            <button class="cat-btn" data-filter="biography">سيرة ذاتية</button>
+            <button class="cat-btn" data-filter="poetry">شعر</button>
+        </div>
+
+        <div class="shelves-container" id="shelves-container"></div>
+        
+        <div class="share-fab-btn" id="share-fab-btn" title="شارك كتابك">+</div>
+        <div class="cart-icon-float" id="cart-icon"><span>🛒</span><div class="cart-badge" id="cart-count">0</div></div>
+        
+        <div class="mobile-nav">
+            <a href="#" class="mobile-nav-item active" id="mobile-home-link"><span>🏠</span><span>الرئيسية</span></a>
+            <a href="#" class="mobile-nav-item" id="mobile-share-btn"><span>🎁</span><span>مشاركة</span></a>
+            <a href="#" class="mobile-nav-item" id="mobile-borrow-btn"><span>🤝</span><span>استعارة</span></a>
+            <a href="#" class="mobile-nav-item" id="mobile-sell-btn"><span>💰</span><span>بيع كتاب</span></a>
+        </div>
+
+        <footer class="site-footer">
+            <a href="https://www.instagram.com/laithdeveloper" target="_blank" class="footer-social-icon" title="تابع المطور على إنستجرام">
+                <svg viewBox="0 0 24 24">
+                    <path d="M7.8,2H16.2C19.4,2 22,4.6 22,7.8V16.2A5.8,5.8 0 0,1 16.2,22H7.8C4.6,22 2,19.4 2,16.2V7.8A5.8,5.8 0 0,1 7.8,2M7.6,4A3.6,3.6 0 0,0 4,7.6V16.4C4,18.39 5.61,20 7.6,20H16.4A3.6,3.6 0 0,0 20,16.4V7.6C20,5.61 18.39,4 16.4,4H7.6M17.25,5.5A1.25,1.25 0 0,1 18.5,6.75A1.25,1.25 0 0,1 17.25,8A1.25,1.25 0 0,1 16,6.75A1.25,1.25 0 0,1 17.25,5.5M12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9Z" />
+                </svg>
+            </a>
+            <div class="footer-copyright">
+                Designed & Developed by <span class="developer-name">Laith Arabiat</span> © 2025
+            </div>
+        </footer>
+
+    </div>
+
+    <div class="modal-overlay" id="product-modal-overlay">
+        <div class="custom-modal">
+            <div class="modal-close-btn" id="close-product-modal">&times;</div>
+            <div class="modal-content-wrapper">
+                <div class="modal-image-container"><img src="" alt="غلاف الكتاب" class="modal-image" id="modal-img"></div>
+                <div class="modal-details">
+                    <h2 class="modal-title" id="modal-title"></h2>
+                    <p class="modal-desc" id="modal-desc"></p>
+                    <div class="modal-price-tag" id="modal-price"></div>
+                    <div class="quantity-selector">
+                        <button class="qty-btn minus">-</button>
+                        <span class="qty-display">1</span>
+                        <button class="qty-btn plus">+</button>
+                    </div>
+                    <button class="main-action-btn" id="add-to-cart-btn"><span>اضافة للسلة</span><span>🛍️</span></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="cart-modal-overlay"><div class="custom-modal"><div class="modal-close-btn" id="close-cart-modal">&times;</div><div class="modal-content-wrapper"><div class="cart-header"><h2>سلة المشتريات</h2></div><div class="cart-body"><div id="cart-items-container"><p class="empty-cart-msg">السلة فارغة حالياً</p></div><div id="checkout-form-container" style="display: none;"><div class="cart-summary"><span>المجموع الكلي:</span><span id="cart-total">0.00 JD</span></div><form id="checkout-form"><div class="form-group"><label class="form-label">الاسم الأول</label><input type="text" class="form-input" id="fname" required></div><div class="form-group"><label class="form-label">الاسم الثاني</label><input type="text" class="form-input" id="lname" required></div><div class="form-group"><label class="form-label">رقم الهاتف (10 أرقام)</label><input type="tel" class="form-input" id="phone" placeholder="07XXXXXXXX" maxlength="10" inputmode="numeric" required><p class="error-msg" id="phone-error">يجب أن يتكون رقم الهاتف من 10 خانات.</p></div><div class="form-group"><label class="form-label">الرقم الجامعي</label><input type="tel" class="form-input" id="uni-id" inputmode="numeric" required></div><button type="submit" class="main-action-btn"><span>إرسال الطلب</span><span>✅</span></button></form></div></div></div></div></div>
+    
+    <div class="modal-overlay" id="sell-modal-overlay">
+        <div class="custom-modal">
+            <div class="modal-close-btn" id="close-sell-modal">&times;</div>
+            <div class="modal-content-wrapper">
+                <div class="cart-header"><h2>عرض كتاب للبيع</h2></div>
+                <div class="cart-body">
+                    <form id="sell-form">
+                        <div class="form-group"><label class="form-label">اسم الكتاب</label><input type="text" class="form-input" id="sell-book-title" required></div>
+                        <div class="form-group"><label class="form-label">تصنيف الكتاب</label><select id="sell-book-category" class="form-input" style="height: 45px;" required><option value="" disabled selected>اختر التصنيف</option><option value="novels">الروايات والأدب</option><option value="self-dev">التنمية البشرية</option><option value="history">التاريخ والحضارة</option><option value="kids">ركن الطفل</option><option value="science">العلوم والمعرفة</option><option value="psychology">علم النفس</option><option value="philosophy">فلسفة</option><option value="spirituality">روحانيات</option><option value="short-stories">قصص قصيرة</option><option value="biography">سيرة ذاتية</option><option value="poetry">شعر</option></select></div>
+                        <div class="form-group"><label class="form-label">السعر المطلوب (JD)</label><input type="number" class="form-input" id="sell-book-price" step="0.1" required></div>
+                        
+                        <div class="form-group"><label class="form-label">وصف الكتاب (اختياري)</label><textarea class="form-input" id="sell-book-desc" rows="2" placeholder="حالة الكتاب، الطبعة، ملاحظات..."></textarea></div>
+
+                        <div class="form-group"><label class="form-label">الاسم الأول للبائع</label><input type="text" class="form-input" id="sell-fname" required></div>
+                        <div class="form-group"><label class="form-label">الاسم الثاني للبائع</label><input type="text" class="form-input" id="sell-lname" required></div>
+                        <div class="form-group"><label class="form-label">رقم الهاتف (07XXXXXXXX)</label><input type="tel" class="form-input" id="sell-phone" maxlength="10" inputmode="numeric" required><p class="error-msg" id="sell-phone-error">يجب أن يتكون رقم الهاتف من 10 خانات.</p></div>
+                        <div class="form-group"><label class="form-label">الرقم الجامعي</label><input type="tel" class="form-input" id="sell-uni-id" inputmode="numeric" required></div>
+                        <button type="submit" class="main-action-btn"><span>متابعة إلى واتس أب</span><span>💬</span></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="borrow-modal-overlay"><div class="custom-modal"><div class="modal-close-btn" id="close-borrow-modal">&times;</div><div class="modal-content-wrapper"><div class="cart-header"><h2>طلب استعارة كتاب</h2></div><div class="cart-body"><form id="borrow-form"><div class="form-group"><label class="form-label">الاسم الأول</label><input type="text" class="form-input" id="borrow-fname" required></div><div class="form-group"><label class="form-label">الاسم الثاني</label><input type="text" class="form-input" id="borrow-lname" required></div><div class="form-group"><label class="form-label">رقم الهاتف (10 أرقام)</label><input type="tel" class="form-input" id="borrow-phone" placeholder="07XXXXXXXX" maxlength="10" inputmode="numeric" required><p class="error-msg" id="borrow-phone-error">يجب أن يتكون رقم الهاتف من 10 خانات.</p></div><div class="form-group"><label class="form-label">الرقم الجامعي</label><input type="tel" class="form-input" id="borrow-uni-id" inputmode="numeric" required></div><button type="submit" class="main-action-btn"><span>إرسال طلب الاستعارة</span><span>🤝</span></button></form></div></div></div></div>
+
+    <div class="modal-overlay" id="about-modal-overlay"><div class="custom-modal"><div class="modal-close-btn" id="close-about-modal">&times;</div><div class="modal-content-wrapper"><div class="cart-header"><h2>من نحن</h2></div><div class="cart-body about-body" style="padding: 25px;"><p class="about-text">نحن نادي اقرأ مبادرة جامعية انبتناها بهدف ان تعود القراءة عادة يومية، وان يصبح الفكر والحوار جزءا من هوية الطالب الجامعي. نؤمن ان الكتاب ليس مجرد صفحات تقلب، بل هي بداية رحلة وعي وتمرد للفكر والآراء المبنية . وان في كل جلسة حوار هي خطوة نحو جيل واعي ومثقف.  انبثقت الفكرة من طالبة تؤمن ان الجامعة يجب ان تكون مساحة لبناء الانسان، قبل الشهادة والتحصيل العلمي .وان كل كتاب يحمل بين طياته فرصة لتغيير حياة او فكر شخص وحياة كاملة. حلمنا بسيط وهو: "نحن نقرا اليوم لنغير الغد" ... ومع مجموعة من الطلبة الشغوفين تحول هذا الحلم الى مبادرة حقيقة لنعيد للكتاب مكانته في المجتمع.  نهدف ان يبدأ اثرنا داخل الجامعة ويصل في يوم الى مستوى المملكة الهاشمية. لنسهم في نهضة فكرية شاملة وحوار واعِ وعودة صادقة.</p><div class="founder-box"><h3>رسالة المؤسس</h3><p class="founder-message">انا يارا سليمان المجيد. أسست نادي اقرأ لانني اؤمن ان الكتاب لديه القدرة على تغيير ما لا يستطيع تغييره شيء آخر. لانه يوقظ الفكر ويوسع المدارك ويعيد الانسان الى ذاته. اردت بعض الوقت لا لنملأ وقتاً بل لنملأ وعياً. نتناقش لا لأجل الجدل بل لأجل شيء اسمى لعقل الانسان ليتعلم. نبدا من جامعتنا ونحلم ان نصل الى وطن . لان... (الكتاب قد يغير شخصاً، والشخص قد يغير العالم.) ونتقدم بالشكر لجامعتنا التي آمنت بحلمنا ومنحتنا مساحة لتتحول الفكرة الى واقع.</p><div class="founder-signature">يارا سليمان المجيد</div></div></div></div></div></div>
+
+    <div class="modal-overlay" id="share-modal-overlay"><div class="custom-modal"><div class="modal-close-btn" id="close-share-modal">&times;</div><div class="modal-content-wrapper"><div class="cart-header"><h2>شارك كتاباً أو ملحقاً</h2></div><div class="cart-body"><form id="share-form"><div class="form-group"><label class="form-label">اسم الملحق / الكتاب</label><input type="text" class="form-input" id="share-title" required></div><div class="form-group"><label class="form-label">صورة الملحق</label><input type="file" class="form-input" id="share-image-file" accept="image/*" required><p style="font-size:0.7rem; color:#888;">* سيتم ضغط الصورة تلقائياً</p></div><div class="form-group"><label class="form-label">الوصف (اختياري)</label><textarea class="form-input" id="share-desc" rows="2"></textarea></div><div class="form-group"><label class="form-label">رقم هاتفك</label><input type="tel" class="form-input" id="share-phone" maxlength="10" inputmode="numeric" required><p class="error-msg" id="share-phone-error">يجب أن يتكون رقم الهاتف من 10 خانات.</p></div><button type="submit" class="main-action-btn" id="share-submit-btn"><span>نشر المشاركة</span><span>🚀</span></button></form></div></div></div></div>
+
+    <script>
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbzkqdQsBjBvamfOhTExjvFSaWS-yrzVakbv1W06nai4IwwYjN6UWXvdMDEwKERLNJwsDg/exec';
+        const categories = { 'novels': 'الروايات والأدب', 'self-dev': 'التنمية البشرية', 'history': 'التاريخ والحضارة', 'kids': 'ركن الطفل', 'science': 'العلوم والمعرفة', 'psychology': 'علم النفس', 'philosophy': 'فلسفة', 'spirituality': 'روحانيات', 'short-stories': 'مجموعة قصصية', 'biography': 'سيرة ذاتية', 'poetry': 'شعر' };
+        let cart = []; let currentSelectedBook = {}; 
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Intro Logic
+            const introScreen = document.getElementById('intro-screen');
+            const progressBar = document.getElementById('progress-bar');
+            const loadingText = document.getElementById('loading-text');
+            const mainStore = document.getElementById('main-store');
+            const bookEmojisContainer = document.getElementById('book-emojis');
+            let progress = 0;
+            function spawnElegantBurst() {
+                const count = 24; const angleStep = (2 * Math.PI) / count;
+                for (let i = 0; i < count; i++) {
+                    const bookEmoji = document.createElement('div'); bookEmoji.className = 'book-emoji';
+                    bookEmoji.textContent = ['📚', '📖', '📕', '📗', '📘', '📙'][Math.floor(Math.random()*6)];
+                    const angle = (i * angleStep) + (Math.random() * 0.1); const dist = 200 + Math.random() * 50; 
+                    const tx = Math.cos(angle) * dist + 'px'; const ty = Math.sin(angle) * dist + 'px'; const rot = (Math.random() * 360) + 'deg';
+                    bookEmoji.style.setProperty('--tx', tx); bookEmoji.style.setProperty('--ty', ty); bookEmoji.style.setProperty('--rot', rot);
+                    bookEmojisContainer.appendChild(bookEmoji); setTimeout(() => { if(bookEmoji.parentNode) bookEmoji.parentNode.removeChild(bookEmoji); }, 3000);
+                }
+            }
+            const interval = setInterval(() => {
+                progress += 1; progressBar.style.width = progress + '%';
+                if (progress >= 100) {
+                    clearInterval(interval); loadingText.textContent = 'جاهز!';
+                    spawnElegantBurst();
+                    fetchBooksFromAPI().then(() => {
+                        setTimeout(() => { introScreen.classList.add('fade-out'); setTimeout(() => { introScreen.style.display = 'none'; mainStore.classList.add('show-main'); }, 1000); }, 2000);
+                    });
+                }
+            }, 40);
+            setupSearch();
+        });
+
+        function activateSection(type) {
+            fetchBooksFromAPI(type);
+            document.getElementById('shelves-container').scrollIntoView({ behavior: 'smooth' });
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            const btnSelector = type === 'sale' ? 'all' : type;
+            const activeBtn = document.querySelector(`.cat-btn[data-filter="${btnSelector}"]`);
+            if(activeBtn) activeBtn.classList.add('active');
+            const fab = document.getElementById('share-fab-btn');
+            if(type === 'share') fab.style.display = 'flex'; else fab.style.display = 'none';
+            document.getElementById('search-input').value = '';
+            const noRes = document.querySelector('.no-results-msg'); if(noRes) noRes.remove();
+        }
+
+        const navBorrowLink = document.getElementById('nav-borrow-link');
+        const navShareLink = document.getElementById('nav-share-link');
+        const mobileBorrowBtn = document.getElementById('mobile-borrow-btn');
+        const mobileShareBtn = document.getElementById('mobile-share-btn');
+        const navHomeLink = document.getElementById('nav-home-link');
+        const mobileHomeBtn = document.getElementById('mobile-home-link');
+        const sellLink = document.getElementById('sell-book-link');
+        const mobileSellBtn = document.getElementById('mobile-sell-btn');
+        const navAboutLink = document.getElementById('nav-about-link');
+
+        if(navHomeLink) navHomeLink.onclick = (e) => { e.preventDefault(); activateSection('sale'); };
+        if(mobileHomeBtn) mobileHomeBtn.onclick = (e) => { e.preventDefault(); activateSection('sale'); };
+        if(navBorrowLink) navBorrowLink.onclick = (e) => { e.preventDefault(); activateSection('borrow'); };
+        if(navShareLink) navShareLink.onclick = (e) => { e.preventDefault(); activateSection('share'); };
+        if(mobileBorrowBtn) mobileBorrowBtn.onclick = (e) => { e.preventDefault(); activateSection('borrow'); };
+        if(mobileShareBtn) mobileShareBtn.onclick = (e) => { e.preventDefault(); activateSection('share'); };
+
+        function fetchBooksFromAPI(type = 'sale') {
+            const container = document.getElementById('shelves-container');
+            container.innerHTML = '<p style="text-align:center; padding:20px; color:#a17506;">جاري جلب البيانات...</p>';
+            let action = 'getBooks'; if(type === 'borrow') action = 'getBorrowBooks'; if(type === 'share') action = 'getShareBooks';
+            return fetch(scriptURL + "?action=" + action).then(response => response.json()).then(data => {
+                container.innerHTML = ''; 
+                if (!data || data.length === 0) { container.innerHTML = '<p style="text-align:center; padding:20px; color:#5d4037;">لا توجد عناصر متاحة حالياً.</p>'; return; }
+                
+                if (type === 'share') {
+                    let html = '<div class="shelf-wrapper"><div class="shelf-title">مشاركات الطلاب</div><div class="shelf-row"><div class="books-track">';
+                    data.forEach(item => {
+                          html += `<div class="book-item share-item" data-phone="${item.phone}" data-title="${item.title.toLowerCase()}"><div class="book-frame"><div class="book-price" style="background:#2196F3;color:white;border:none;">مجاني</div><img src="${item.image}" class="book-cover" alt="${item.title}" onerror="this.src='https://via.placeholder.com/100x150?text=No+Image'"><div class="book-ribbon">${item.title}</div><span class="hidden-desc" style="display:none">${item.description || 'لا يوجد وصف'}</span></div></div>`;
+                    });
+                    html += '</div><div class="wood-shelf"></div></div></div>';
+                    container.innerHTML = html; return;
+                }
+                
+                const booksByCategory = {};
+                data.forEach(book => { if (!book.category) return; if (!booksByCategory[book.category]) booksByCategory[book.category] = []; booksByCategory[book.category].push(book); });
+                for (const [catCode, catTitle] of Object.entries(categories)) {
+                    if (booksByCategory[catCode] && booksByCategory[catCode].length > 0) {
+                        const shelfWrapper = document.createElement('div'); shelfWrapper.className = 'shelf-wrapper'; shelfWrapper.setAttribute('data-category', catCode);
+                        let booksHtml = '';
+                        booksByCategory[catCode].forEach(book => {
+                            const priceDisplay = type === 'borrow' ? 'مجاني' : book.price;
+                            const bookTypeClass = type === 'borrow' ? 'borrow-item' : 'sale-item';
+                            const desc = book.description ? `<span class="hidden-desc" style="display:none">${book.description}</span>` : '';
+                            booksHtml += `<div class="book-item ${bookTypeClass}" data-title="${book.title.toLowerCase()}"><div class="book-frame"><div class="book-price">${priceDisplay}</div><img src="${book.image}" class="book-cover" alt="${book.title}" onerror="this.src='https://via.placeholder.com/100x150?text=No+Image'"><div class="book-ribbon">${book.title}</div>${desc}</div></div>`;
+                        });
+                        shelfWrapper.innerHTML = `<div class="shelf-title">${catTitle}</div><div class="shelf-row"><div class="books-track">${booksHtml}</div><div class="wood-shelf"></div></div>`; container.appendChild(shelfWrapper);
+                    }
+                }
+            });
+        }
+
+        function setupSearch() {
+             const searchInput = document.getElementById('search-input');
+             const shelvesContainer = document.getElementById('shelves-container');
+             searchInput.addEventListener('input', function(e) {
+                const query = e.target.value.trim().toLowerCase();
+                const books = document.querySelectorAll('.book-item');
+                const shelves = document.querySelectorAll('.shelf-wrapper');
+                const oldMsg = document.querySelector('.no-results-msg'); if (oldMsg) oldMsg.remove();
+                let hasResults = false;
+                books.forEach(book => {
+                    const title = book.getAttribute('data-title') || book.querySelector('.book-ribbon').innerText.toLowerCase();
+                    if (title.includes(query)) { book.classList.remove('hidden-book'); hasResults = true; } else { book.classList.add('hidden-book'); }
+                });
+                shelves.forEach(shelf => {
+                    const visibleBooks = shelf.querySelectorAll('.book-item:not(.hidden-book)');
+                    if (visibleBooks.length > 0) shelf.classList.remove('hidden-shelf'); else shelf.classList.add('hidden-shelf');
+                });
+                if (!hasResults && query !== '') { const msg = document.createElement('div'); msg.className = 'no-results-msg'; msg.textContent = 'لم يتم العثور على نتائج 😔'; shelvesContainer.appendChild(msg); }
+             });
+        }
+
+        document.querySelectorAll('.cat-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const filterValue = btn.getAttribute('data-filter');
+                if(filterValue === 'all') activateSection('sale');
+                else if(filterValue === 'borrow') activateSection('borrow');
+                else if(filterValue === 'share') activateSection('share');
+                else {
+                    fetchBooksFromAPI('sale').then(() => {
+                        const shelves = document.querySelectorAll('.shelf-wrapper');
+                        shelves.forEach(shelf => {
+                           if (shelf.getAttribute('data-category') === filterValue) shelf.classList.remove('hidden-shelf');
+                           else shelf.classList.add('hidden-shelf');
+                        });
+                         document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+                         btn.classList.add('active');
+                    });
+                }
+            });
+        });
+
+        // Modals & Click Handling
+        const productModal = document.getElementById('product-modal-overlay');
+        document.addEventListener('click', function(e) {
+            const bookItem = e.target.closest('.book-item');
+            if (bookItem) {
+                const imgSrc = bookItem.querySelector('.book-cover').src;
+                const title = bookItem.querySelector('.book-ribbon').innerText;
+                const priceDiv = bookItem.querySelector('.book-price');
+                const price = priceDiv ? priceDiv.innerText : '';
+                const descSpan = bookItem.querySelector('.hidden-desc');
+                const description = descSpan ? descSpan.innerText : "كتاب رائع من مختارات نادي اقرأ.";
+                
+                document.getElementById('modal-img').src = imgSrc;
+                document.getElementById('modal-title').innerText = title;
+                document.getElementById('modal-price').innerText = price;
+                document.getElementById('modal-desc').innerText = description; 
+                
+                const actionBtn = document.getElementById('add-to-cart-btn');
+                const isShare = bookItem.classList.contains('share-item');
+                const isBorrow = bookItem.classList.contains('borrow-item');
+
+                if (isShare) {
+                    const phone = bookItem.getAttribute('data-phone');
+                    actionBtn.innerHTML = "<span>تواصل مع المشارك</span><span>💬</span>";
+                    actionBtn.onclick = function() { window.open(`https://wa.me/962${phone.substring(1)}?text=مرحباً، بخصوص مشاركتك: ${title}`, '_blank'); };
+                    document.querySelector('.quantity-selector').style.display = 'none';
+                } else if (isBorrow) {
+                    actionBtn.innerHTML = "<span>طلب استعارة</span><span>🤝</span>";
+                    actionBtn.onclick = function() { openBorrowModal(title); };
+                    document.querySelector('.quantity-selector').style.display = 'none';
+                    document.getElementById('modal-desc').innerText = "كتاب متاح للاستعارة المجانية.";
+                } else {
+                    actionBtn.innerHTML = "<span>اضافة للسلة</span><span>🛍️</span>";
+                    actionBtn.onclick = addToCartFunc;
+                    document.querySelector('.quantity-selector').style.display = 'flex';
+                    currentSelectedBook = { title, price, image: imgSrc };
+                }
+                productModal.classList.add('active');
+            }
+        });
+
+        // Modal Close & Form Handling
+        const closeProductModalBtn = document.getElementById('close-product-modal');
+        const closeCartModalBtn = document.getElementById('close-cart-modal');
+        const closeSellModalBtn = document.getElementById('close-sell-modal');
+        const closeBorrowModalBtn = document.getElementById('close-borrow-modal');
+        const closeAboutModalBtn = document.getElementById('close-about-modal');
+        const closeShareModalBtn = document.getElementById('close-share-modal');
+        
+        const cartIcon = document.getElementById('cart-icon');
+        cartIcon.onclick = () => { renderCartItems(); document.getElementById('cart-modal-overlay').classList.add('active'); };
+        sellLink.onclick = (e) => { e.preventDefault(); document.getElementById('sell-modal-overlay').classList.add('active'); };
+        mobileSellBtn.onclick = (e) => { e.preventDefault(); document.getElementById('sell-modal-overlay').classList.add('active'); };
+        navAboutLink.onclick = (e) => { e.preventDefault(); document.getElementById('about-modal-overlay').classList.add('active'); };
+        const shareFabBtn = document.getElementById('share-fab-btn');
+        shareFabBtn.onclick = () => document.getElementById('share-modal-overlay').classList.add('active');
+
+        function closeAllModals() {
+             document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+        }
+        closeProductModalBtn.onclick = closeAllModals;
+        closeCartModalBtn.onclick = closeAllModals;
+        closeSellModalBtn.onclick = closeAllModals;
+        closeBorrowModalBtn.onclick = closeAllModals;
+        closeAboutModalBtn.onclick = closeAllModals;
+        closeShareModalBtn.onclick = closeAllModals;
+        
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.onclick = (e) => { if (e.target === overlay) closeAllModals(); }
+        });
+
+        function openBorrowModal(bookTitle) {
+            closeAllModals();
+            currentSelectedBook = { title: bookTitle };
+            document.getElementById('borrow-modal-overlay').classList.add('active');
+        }
+
+        function addToCartFunc() {
+             if (cart.some(item => item.title === currentSelectedBook.title)) { alert("موجود بالسلة"); return; }
+            cart.push(currentSelectedBook);
+            updateCartCount();
+            const btn = document.getElementById('add-to-cart-btn');
+            const oldHTML = btn.innerHTML;
+            btn.innerHTML = "<span>تمت الإضافة!</span><span>✅</span>";
+            btn.style.background = "#4caf50";
+            setTimeout(() => {
+                closeAllModals();
+                setTimeout(() => {
+                    btn.innerHTML = oldHTML;
+                    btn.style.background = "linear-gradient(45deg, #a17506, #cfaa56)";
+                }, 300);
+            }, 800);
+        }
+
+        function updateCartCount() {
+            document.getElementById('cart-count').innerText = cart.length;
+            const icon = document.getElementById('cart-icon');
+            icon.style.transform = 'scale(1.3)';
+            setTimeout(() => icon.style.transform = 'scale(1)', 200);
+        }
+
+        window.removeFromCart = function(index) {
+            cart.splice(index, 1);
+            updateCartCount();
+            renderCartItems();
+        };
+        
+        function renderCartItems() {
+            const container = document.getElementById('cart-items-container');
+            const formContainer = document.getElementById('checkout-form-container');
+            const totalEl = document.getElementById('cart-total');
+            if (cart.length === 0) {
+                container.innerHTML = '<p class="empty-cart-msg">السلة فارغة حالياً 😔</p>';
+                formContainer.style.display = 'none';
+            } else {
+                let html = '<div class="cart-items-list">';
+                let total = 0;
+                cart.forEach((item, index) => {
+                    let priceVal = parseFloat(item.price.replace(/[^\d\.]/g, ''));
+                    total += priceVal;
+                    html += `<div class="cart-item-preview"><div class="cart-item-left"><button class="remove-item-btn" onclick="removeFromCart(${index})">&times;</button><img src="${item.image}" class="cart-item-img"><div class="cart-item-info"><h4>${item.title}</h4><span class="cart-item-price">${item.price}</span><span class="qty-badge">الكمية: 1</span></div></div></div>`;
+                });
+                html += '</div>';
+                container.innerHTML = html;
+                totalEl.innerText = total.toFixed(2) + ' JD';
+                formContainer.style.display = 'block';
+            }
+        }
+
+        // Numeric Inputs
+        const numericInputs = [ document.getElementById('phone'), document.getElementById('sell-phone'), document.getElementById('uni-id'), document.getElementById('sell-uni-id'), document.getElementById('borrow-phone'), document.getElementById('borrow-uni-id'), document.getElementById('share-phone') ];
+        numericInputs.forEach(input => {
+            if(input) {
+                input.addEventListener('input', function() {
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                    if (this.id.includes('phone') && this.value.length > 10) this.value = this.value.slice(0, 10);
+                });
+            }
+        });
+
+        // Forms Submission
+        document.getElementById('checkout-form').onsubmit = function(e) {
+            e.preventDefault();
+            const phoneVal = document.getElementById('phone').value;
+            if (phoneVal.length !== 10) { document.getElementById('phone-error').style.display = 'block'; return; }
+            document.getElementById('phone-error').style.display = 'none';
+            const btn = this.querySelector('button[type="submit"]');
+            btn.innerHTML = "جاري الإرسال..."; btn.disabled = true;
+            const orderDetails = cart.map(item => item.title).join(", ");
+            const formData = { action: 'addOrder', books: orderDetails, total: document.getElementById('cart-total').innerText, fname: document.getElementById('fname').value, lname: document.getElementById('lname').value, phone: phoneVal, uniId: document.getElementById('uni-id').value };
+            fetch(scriptURL, { method: 'POST', headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(formData) })
+            .then(() => { alert(`شكراً! تم استلام طلبك.`); cart = []; updateCartCount(); this.reset(); closeAllModals(); })
+            .finally(() => { btn.innerHTML = "إرسال الطلب"; btn.disabled = false; });
+        };
+
+        document.getElementById('sell-form').onsubmit = function(e) {
+            e.preventDefault();
+            const phoneVal = document.getElementById('sell-phone').value;
+            if (phoneVal.length !== 10) { document.getElementById('sell-phone-error').style.display = 'block'; return; }
+            document.getElementById('sell-phone-error').style.display = 'none';
+            const desc = document.getElementById('sell-book-desc').value;
+            
+            const msg = `السلام عليكم، أرغب بعرض كتاب للبيع:%0a` +
+                        `📚 الكتاب: ${document.getElementById('sell-book-title').value}%0a` +
+                        `📂 التصنيف: ${document.getElementById('sell-book-category').value}%0a` +
+                        `💰 السعر: ${document.getElementById('sell-book-price').value} JD%0a` +
+                        `📝 الوصف: ${desc}%0a` +
+                        `👤 البائع: ${document.getElementById('sell-fname').value} ${document.getElementById('sell-lname').value}%0a` +
+                        `📱 هاتف: ${phoneVal}%0a` +
+                        `🆔 رقم جامعي: ${document.getElementById('sell-uni-id').value}%0a%0a` +
+                        `*سأرسل الصورة الآن.*`;
+            window.open(`https://wa.me/962790586053?text=${msg}`, '_blank');
+            this.reset(); closeAllModals();
+        };
+
+        document.getElementById('borrow-form').onsubmit = function(e) {
+            e.preventDefault();
+            const phoneVal = document.getElementById('borrow-phone').value;
+            if (phoneVal.length !== 10) { document.getElementById('borrow-phone-error').style.display = 'block'; return; }
+            const msg = `مرحباً، أرغب باستعارة كتاب:%0a📚 ${currentSelectedBook.title}%0a👤 ${document.getElementById('borrow-fname').value}%0a📱 ${phoneVal}`;
+            window.open(`https://wa.me/962790586053?text=${msg}`, '_blank');
+            this.reset(); closeAllModals();
+        };
+        
+        document.getElementById('share-form').onsubmit = function(e) {
+            e.preventDefault();
+            const phone = document.getElementById('share-phone').value;
+            if (phone.length !== 10) { document.getElementById('share-phone-error').style.display = 'block'; return; }
+            const btn = document.getElementById('share-submit-btn');
+            btn.innerHTML = "جاري الرفع..."; btn.disabled = true;
+            const file = document.getElementById('share-image-file').files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
+                        const maxWidth = 150; const scaleSize = maxWidth / img.width;
+                        canvas.width = maxWidth; canvas.height = img.height * scaleSize;
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                        const formData = {
+                            action: 'addShareBook',
+                            title: document.getElementById('share-title').value,
+                            description: document.getElementById('share-desc').value,
+                            phone: phone,
+                            image: dataUrl
+                        };
+                        fetch(scriptURL, { method: 'POST', headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(formData) })
+                        .then(() => { alert("تمت المشاركة بنجاح!"); document.getElementById('share-form').reset(); closeAllModals(); activateSection('share'); })
+                        .finally(() => { btn.innerHTML = "نشر المشاركة"; btn.disabled = false; });
+                    }
+                    img.src = event.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        };
+    </script>
+</body>
+</html>
