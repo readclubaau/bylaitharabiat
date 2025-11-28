@@ -1126,10 +1126,10 @@
                     clearInterval(interval); loadingText.textContent = 'جاهز!';
                     spawnElegantBurst();
                     fetchBooksFromAPI().then(() => {
-                        setTimeout(() => { introScreen.classList.add('fade-out'); setTimeout(() => { introScreen.style.display = 'none'; mainStore.classList.add('show-main'); }, 1000); }, 2000);
+                        setTimeout(() => { introScreen.classList.add('fade-out'); setTimeout(() => { introScreen.style.display = 'none'; mainStore.classList.add('show-main'); }, 10); }, 10);
                     });
                 }
-            }, 40);
+            }, 10);
             setupSearch();
         });
 
