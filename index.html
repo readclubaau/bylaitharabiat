@@ -1411,7 +1411,7 @@
                         `📱 هاتف: ${phoneVal}%0a` +
                         `🆔 رقم جامعي: ${document.getElementById('sell-uni-id').value}%0a%0a` +
                         `*سأرسل الصورة الآن.*`;
-            window.open(`https://wa.me/962790586053?text=${msg}`, '_blank');
+            window.open(`https://wa.me/962790760808?text=${msg}`, '_blank');
             this.reset(); closeAllModals();
         };
 
@@ -1420,7 +1420,7 @@
             const phoneVal = document.getElementById('borrow-phone').value;
             if (phoneVal.length !== 10) { document.getElementById('borrow-phone-error').style.display = 'block'; return; }
             const msg = `مرحباً، أرغب باستعارة كتاب:%0a📚 ${currentSelectedBook.title}%0a👤 ${document.getElementById('borrow-fname').value}%0a📱 ${phoneVal}`;
-            window.open(`https://wa.me/962790586053?text=${msg}`, '_blank');
+            window.open(`https://wa.me/962790760808?text=${msg}`, '_blank');
             this.reset(); closeAllModals();
         };
         
